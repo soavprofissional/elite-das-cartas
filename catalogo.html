@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8f7fc">
+  <meta name="description" content="Explore expansões e cartas no catálogo da Elite das Cartas.">
+  <title>Catálogo | Elite das Cartas</title>
+  <link rel="stylesheet" href="catalogo.css">
+  <script src="catalogo-dados.js" defer></script>
+  <script src="catalogo-providers.js" defer></script>
+  <script src="catalogo.js" defer></script>
+</head>
+<body>
+  <header class="catalog-header">
+    <nav class="catalog-nav shell" aria-label="Navegação principal">
+      <a class="brand" href="index.html" aria-label="Elite das Cartas, início">
+        <span class="brand-mark" aria-hidden="true">E</span>
+        <span class="brand-name">ELITE DAS CARTAS</span>
+      </a>
+      <a class="home-link" href="index.html">← Voltar ao início</a>
+    </nav>
+  </header>
+
+  <main class="shell catalog-main">
+    <nav class="breadcrumbs" id="breadcrumbs" aria-label="Trilha de navegação"></nav>
+    <div id="catalog-content" aria-live="polite">
+      <p class="loading-message">Carregando catálogo...</p>
+    </div>
+    <p class="demo-note">As fontes externas podem ter cobertura, idiomas, imagens e dados de preço diferentes. Confira a origem e a moeda antes de usar qualquer referência.</p>
+  </main>
+
+  <footer class="catalog-footer">
+    <div class="shell">© 2026 Elite das Cartas <span>·</span> Dados de demonstração e fontes externas</div>
+  </footer>
+</body>
+</html>

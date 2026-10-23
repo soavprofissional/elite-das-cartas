@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8f7fc">
+  <meta name="description" content="Descubra cartas colecionáveis, acompanhe tendências de mercado e explore seu próximo card favorito na Elite das Cartas.">
+  <title>Elite das Cartas | Seu universo de cards</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8f7fc;
+      --surface: #ffffff;
+      --surface-light: #ece8f5;
+      --text: #30283f;
+      --muted: #746d82;
+      --accent: #7138d4;
+      --line: #e8e3ef;
+      --turquoise: #12a9aa;
+      --pink: #ed4f9b;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 93% 7%, rgba(237, 79, 155, .08), transparent 29rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .container { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .9);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.04em; }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #7c42e7, #5d2fc0);
+      color: #ffffff;
+      font-size: 19px;
+      transform: rotate(-7deg);
+    }
+
+    .brand-name { font-size: 16px; }
+    .nav-links { display: flex; align-items: center; gap: 28px; color: var(--muted); font-size: 13px; }
+    .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
+    .nav-cta, .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #7c42e7, #5d2fc0);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 750;
+      box-shadow: 0 6px 16px rgba(104, 54, 202, .2);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .nav-cta:hover, .button:hover { transform: translateY(-2px); box-shadow: 0 9px 22px rgba(104, 54, 202, .28); }
+
+    .hero {
+      min-height: 475px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      align-items: center;
+      gap: 36px;
+      padding: 64px 0 76px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #6730c6;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { width: 20px; height: 1px; background: currentColor; content: ""; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 680px;
+      margin: 18px 0 17px;
+      font-size: clamp(42px, 6vw, 68px);
+      line-height: .99;
+      letter-spacing: -.065em;
+    }
+    h1 span { color: #7138d4; }
+    .hero-copy { max-width: 500px; margin-bottom: 29px; color: var(--muted); font-size: 16px; }
+    .hero-art {
+      min-height: 330px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(113, 56, 212, .12);
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .9), transparent 28%),
+        radial-gradient(ellipse at 20% 90%, rgba(18, 169, 170, .18), transparent 42%),
+        radial-gradient(ellipse at 84% 16%, rgba(237, 79, 155, .19), transparent 42%),
+        linear-gradient(145deg, #f0e9ff, #fbf8ff 54%, #e7f8f7);
+    }
+    .hero-art::before, .hero-art::after {
+      position: absolute;
+      border: 1px solid rgba(113, 56, 212, .15);
+      border-radius: 50%;
+      content: "";
+    }
+    .hero-art::before { width: 280px; height: 280px; }
+    .hero-art::after { width: 340px; height: 340px; }
+    .hero-card {
+      width: 178px;
+      height: 248px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 7px solid rgba(255, 255, 255, .86);
+      border-radius: 19px;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255, 255, 255, .7), transparent 10%),
+        radial-gradient(ellipse at 45% 48%, #ffb4d8 0 12%, transparent 13%),
+        radial-gradient(ellipse at 55% 51%, #26c9c4 0 22%, transparent 23%),
+        linear-gradient(145deg, #9756ed, #6133cb 55%, #2e9fbb);
+      box-shadow: 0 24px 55px rgba(78, 48, 142, .28);
+      transform: rotate(-8deg);
+    }
+    .hero-card::before {
+      width: 108px;
+      height: 108px;
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, .65);
+      border-radius: 50%;
+      box-shadow: 0 0 0 12px rgba(255, 255, 255, .1), 0 0 0 26px rgba(255, 255, 255, .08);
+      content: "";
+    }
+    .hero-card-label {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      left: 10px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 9px;
+      background: rgba(43, 29, 86, .38);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-align: center;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+    .hero-sticker {
+      position: absolute;
+      z-index: 2;
+      padding: 10px 13px;
+      border: 1px solid rgba(255, 255, 255, .85);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 10px 25px rgba(57, 38, 91, .12);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .hero-sticker strong { display: block; color: var(--accent); font-size: 14px; }
+    .hero-sticker-top { top: 42px; right: 24px; transform: rotate(5deg); }
+    .hero-sticker-bottom { bottom: 39px; left: 21px; transform: rotate(-5deg); }
+    .search-form {
+      width: min(570px, 100%);
+      display: flex;
+      gap: 9px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface);
+      box-shadow: 0 10px 35px rgba(57, 38, 91, .07);
+    }
+    .search-form input {
+      width: 100%;
+      min-width: 0;
+      padding: 0 12px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .search-form input::placeholder { color: #8d8799; }
+    .search-form input:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+    .search-form button { cursor: pointer; }
+
+    .section { padding: 65px 0; border-top: 1px solid var(--line); }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 27px; }
+    .section-heading h2 { margin: 9px 0 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.045em; }
+    .section-heading p { max-width: 430px; margin: 0; color: var(--muted); font-size: 13px; }
+
+    .category-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
+    .category-card {
+      min-height: 190px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--card-color), transparent 84%), transparent 58%),
+        linear-gradient(150deg, #fff, #fbfaff);
+      box-shadow: 0 8px 24px rgba(57, 38, 91, .045);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .category-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--card-color), transparent 35%); box-shadow: 0 14px 30px rgba(57, 38, 91, .1); }
+    .category-card::after {
+      width: 125px;
+      height: 125px;
+      position: absolute;
+      right: -34px;
+      bottom: 28px;
+      border: 1px solid color-mix(in srgb, var(--card-color), transparent 65%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 14px color-mix(in srgb, var(--card-color), transparent 90%), 0 0 0 29px color-mix(in srgb, var(--card-color), transparent 94%);
+      content: "";
+    }
+    .category-card::before {
+      height: 4px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      background: linear-gradient(90deg, var(--card-color), color-mix(in srgb, var(--card-color), white 45%));
+      content: "";
+    }
+    .category-symbol {
+      width: 100%;
+      height: 112px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--card-color), transparent 78%);
+      border-radius: 11px;
+      background: color-mix(in srgb, var(--card-color), white 94%);
+      color: var(--card-color);
+      font-size: 19px;
+      font-weight: 800;
+    }
+    .category-symbol img {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+    }
+    .category-card[data-category="marvel"] .category-symbol img {
+      object-fit: cover;
+      object-position: center 45%;
+    }
+    .category-card h3 { position: relative; z-index: 1; margin: 0 0 2px; font-size: 16px; }
+    .category-card p { position: relative; z-index: 1; margin: 0; color: var(--muted); font-size: 11px; }
+    .category-card[hidden] { display: none; }
+    .empty-search { display: none; margin: 20px 0 0; color: var(--muted); font-size: 14px; }
+    .empty-search.visible { display: block; }
+
+    .character-section { background: linear-gradient(180deg, #fff, #f8f6fc); }
+    .character-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .character-card {
+      min-height: 275px;
+      position: relative;
+      display: flex;
+      align-items: end;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #30283f;
+      box-shadow: 0 9px 28px rgba(57, 38, 91, .09);
+      isolation: isolate;
+    }
+    .character-card img {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      z-index: -2;
+      inset: 0;
+      object-fit: cover;
+      transition: transform .35s ease;
+    }
+    .character-card:hover img { transform: scale(1.045); }
+    .character-card::after {
+      position: absolute;
+      z-index: -1;
+      inset: 25% 0 0;
+      background: linear-gradient(transparent, rgba(27, 20, 42, .88));
+      content: "";
+    }
+    .character-copy { padding: 22px; color: #fff; }
+    .character-copy span { color: #e8d9ff; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .character-copy h3 { margin: 5px 0 4px; font-size: 23px; letter-spacing: -.035em; }
+    .character-copy p { max-width: 440px; margin: 0; color: rgba(255, 255, 255, .86); font-size: 12px; }
+
+    .market-section { background: #f0edf8; }
+    .example-note { padding: 7px 10px; border: 1px solid #ded5ee; border-radius: 20px; background: #fff; color: #655b77; font-size: 11px; }
+    .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+    .market-card { padding: 19px; border: 1px solid #e6e0ee; border-radius: 12px; background: var(--surface); box-shadow: 0 8px 24px rgba(57, 38, 91, .05); }
+    .market-card, .movement-card, .featured-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .market-card:hover, .movement-card:hover, .featured-card:hover { transform: translateY(-4px); box-shadow: 0 15px 32px rgba(57, 38, 91, .11); }
+    .market-top { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; }
+    .market-card h3 { margin: 20px 0 3px; font-size: 16px; }
+    .market-detail { color: var(--muted); font-size: 11px; }
+    .market-value { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 22px; }
+    .market-value strong { font-size: 24px; letter-spacing: -.04em; }
+    .change { font-size: 12px; font-weight: 750; }
+    .up { color: #16804d; }
+    .down { color: #c34251; }
+    .trend { height: 4px; margin-top: 14px; overflow: hidden; border-radius: 9px; background: var(--surface-light); }
+    .trend span { height: 100%; display: block; border-radius: inherit; background: var(--card-color, var(--accent)); }
+
+    .featured-section { background: #fff; }
+    .featured-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; }
+    .featured-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(57, 38, 91, .055);
+    }
+    .featured-art {
+      min-height: 220px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(255, 255, 255, .84), transparent 27%),
+        radial-gradient(ellipse at 10% 100%, rgba(18, 169, 170, .2), transparent 45%),
+        linear-gradient(140deg, color-mix(in srgb, var(--card-color), white 76%), #fff 56%, color-mix(in srgb, var(--card-color), white 88%));
+    }
+    .featured-art::before {
+      width: 132px;
+      height: 168px;
+      position: absolute;
+      border: 1px solid color-mix(in srgb, var(--card-color), transparent 56%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 15px color-mix(in srgb, var(--card-color), transparent 92%), 0 0 0 31px color-mix(in srgb, var(--card-color), transparent 95%);
+      content: "";
+      transform: rotate(-24deg);
+    }
+    .featured-art::after {
+      width: 92px;
+      height: 124px;
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, .9);
+      border-radius: 12px;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--card-color), white 12%), color-mix(in srgb, var(--card-color), #30283f 18%));
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--card-color), transparent 68%);
+      content: "";
+      transform: rotate(7deg);
+    }
+    .featured-art-label {
+      position: absolute;
+      z-index: 1;
+      right: 11px;
+      bottom: 11px;
+      padding: 6px 9px;
+      border: 1px solid rgba(255, 255, 255, .7);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, .78);
+      color: #554b67;
+      font-size: 10px;
+      backdrop-filter: blur(7px);
+    }
+    .featured-info { padding: 17px; }
+    .featured-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+    .featured-category { color: #6730c6; font-weight: 750; }
+    .featured-info h3 { margin: 9px 0 3px; font-size: 17px; letter-spacing: -.02em; }
+    .featured-edition { margin: 0; color: var(--muted); font-size: 12px; }
+    .featured-price { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .featured-price span { color: var(--muted); font-size: 10px; }
+    .featured-price strong { color: var(--text); font-size: 18px; }
+
+    .movement-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .movement-card { padding: 23px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 8px 24px rgba(57, 38, 91, .045); }
+    .movement-card .movement-icon { color: var(--turquoise); font-size: 20px; font-weight: 800; }
+    .movement-card:last-child .movement-icon { color: var(--pink); }
+    .movement-card h3 { margin: 13px 0 6px; font-size: 17px; }
+    .movement-card p { margin: 0; color: var(--muted); font-size: 13px; }
+    .market-disclaimer { margin: 18px 0 0; color: var(--muted); font-size: 11px; }
+
+    .collection-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 32px;
+      border: 1px solid #e0d4f4;
+      border-radius: 14px;
+      background:
+        radial-gradient(ellipse at 100% 0%, rgba(18, 169, 170, .12), transparent 38%),
+        linear-gradient(115deg, rgba(113, 56, 212, .1), transparent 65%),
+        var(--surface);
+      box-shadow: 0 12px 34px rgba(57, 38, 91, .06);
+    }
+    .collection-panel h2 { margin: 9px 0 8px; font-size: clamp(25px, 4vw, 34px); letter-spacing: -.045em; }
+    .collection-panel p { max-width: 510px; margin: 0; color: var(--muted); font-size: 13px; }
+    .coming-soon { flex: 0 0 auto; padding: 8px 11px; border: 1px solid #d9c9f2; border-radius: 20px; background: #f6f1ff; color: #6730c6; font-size: 11px; font-weight: 750; }
+
+    footer { padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; }
+
+    @media (max-width: 800px) {
+      .category-grid { grid-template-columns: repeat(3, 1fr); }
+      .category-card { min-height: 165px; }
+      .hero { grid-template-columns: minmax(0, 1fr) minmax(230px, .8fr); gap: 22px; }
+      .hero-art { min-height: 290px; }
+      .character-card { min-height: 235px; }
+      .featured-art { min-height: 190px; }
+      .section-heading { align-items: start; flex-direction: column; }
+    }
+
+    @media (max-width: 560px) {
+      .container { width: min(100% - 28px, 1120px); }
+      .nav { min-height: 66px; flex-wrap: wrap; gap: 12px; padding: 12px 0; }
+      .brand-name { font-size: 14px; }
+      .nav-links { order: 3; width: 100%; justify-content: space-between; gap: 10px; font-size: 11px; }
+      .nav-cta { min-height: 36px; padding: 0 11px; font-size: 11px; }
+      .hero { grid-template-columns: 1fr; gap: 30px; padding: 54px 0 48px; }
+      .hero-art { min-height: 260px; border-radius: 24px; }
+      .hero-card { width: 142px; height: 198px; }
+      .hero-art::before { width: 220px; height: 220px; }
+      .hero-art::after { width: 270px; height: 270px; }
+      .hero-sticker-top { top: 25px; right: 14px; }
+      .hero-sticker-bottom { bottom: 22px; left: 12px; }
+      .hero-copy { font-size: 14px; }
+      .search-form button { padding: 0 12px; }
+      .section { padding: 48px 0; }
+      .category-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+      .category-card { min-height: 150px; padding: 13px; }
+      .category-symbol { height: 88px; }
+      .character-grid { grid-template-columns: 1fr; gap: 12px; }
+      .character-card { min-height: 220px; }
+      .character-copy { padding: 17px; }
+      .character-copy h3 { font-size: 20px; }
+      .market-grid { grid-template-columns: 1fr; }
+      .featured-grid { grid-template-columns: 1fr; }
+      .featured-art { min-height: 220px; }
+      .movement-grid { grid-template-columns: 1fr; }
+      .collection-panel { align-items: start; flex-direction: column; padding: 23px; }
+      .footer-inner { flex-direction: column; gap: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container" aria-label="Navegação principal">
+      <a class="brand" href="#inicio" aria-label="Elite das Cartas, início">
+        <span class="brand-mark" aria-hidden="true">E</span>
+        <span class="brand-name">ELITE DAS CARTAS</span>
+      </a>
+      <div class="nav-links">
+        <a href="#categorias">Categorias</a>
+        <a href="#personagens">Personagens</a>
+        <a href="#cartas">Cartas em destaque</a>
+        <a href="#movimentacoes">Movimentações</a>
+      </div>
+      <a class="nav-cta" href="#colecao">Minha coleção <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero container" id="inicio">
+      <div class="hero-content">
+        <span class="eyebrow">Um universo de possibilidades</span>
+        <h1>Seu próximo card favorito <span>está aqui.</span></h1>
+        <p class="hero-copy">Descubra cartas que contam histórias, explore seus TCGs favoritos e acompanhe cada movimento do mercado em um só lugar feito para colecionadores.</p>
+        <form class="search-form" role="search" id="category-search">
+          <label for="search-input" class="visually-hidden">Buscar uma categoria</label>
+          <input id="search-input" type="search" placeholder="Busque uma categoria..." autocomplete="off">
+          <button class="button" type="submit">Buscar</button>
+        </form>
+      </div>
+      <div class="hero-art" role="img" aria-label="Ilustração abstrata de uma carta colecionável">
+        <div class="hero-card" aria-hidden="true">
+          <span class="hero-card-label">Uma nova descoberta</span>
+        </div>
+        <span class="hero-sticker hero-sticker-top">Seu hobby, <strong>em destaque</strong></span>
+        <span class="hero-sticker hero-sticker-bottom">✦ Feito para colecionar</span>
+      </div>
+    </section>
+
+    <section class="section container" id="categorias">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Escolha seu jogo</span>
+          <h2>Universos para explorar</h2>
+        </div>
+        <p>De clássicos a novas aventuras, encontre uma categoria para chamar de sua.</p>
+      </div>
+      <div class="category-grid" id="category-grid">
+        <a class="category-card" href="catalogo.html?jogo=pokemon" style="--card-color:#e68a20" data-category="pokemon pokémon" aria-label="Abrir catálogo de Pokémon">
+          <span class="category-symbol"><img src="pokemon.png" alt="Ícone de Pokémon"></span>
+          <div><h3>Pokémon</h3><p>Colecione sua jornada</p></div>
+        </a>
+        <a class="category-card" href="catalogo.html?jogo=magic" style="--card-color:#586bd6" data-category="magic mtg" aria-label="Abrir catálogo de Magic">
+          <span class="category-symbol"><img src="magic.jpeg" alt="Ícone de Magic"></span>
+          <div><h3>Magic</h3><p>Estratégia em cada turno</p></div>
+        </a>
+        <a class="category-card" href="catalogo.html?jogo=marvel" style="--card-color:#dc4772" data-category="marvel" aria-label="Abrir catálogo de Marvel">
+          <span class="category-symbol"><img src="marvel.jpeg" alt="Ícone de Marvel"></span>
+          <div><h3>Marvel</h3><p>Heróis em coleção</p></div>
+        </a>
+        <a class="category-card" href="catalogo.html?jogo=one-piece" style="--card-color:#079c9a" data-category="one piece" aria-label="Abrir catálogo de One Piece">
+          <span class="category-symbol"><img src="one%20pice%20.jpeg" alt="Ícone de One Piece"></span>
+          <div><h3>One Piece</h3><p>Uma aventura sem limites</p></div>
+        </a>
+        <a class="category-card" href="catalogo.html?jogo=yu-gi-oh" style="--card-color:#9149cf" data-category="yu-gi-oh yugioh" aria-label="Abrir catálogo de Yu-Gi-Oh!">
+          <span class="category-symbol"><img src="yu%20gi%20oh%20.png" alt="Ícone de Yu-Gi-Oh!"></span>
+          <div><h3>Yu-Gi-Oh!</h3><p>Duelo e estratégia</p></div>
+        </a>
+        <a class="category-card" href="catalogo.html?jogo=lorcana" style="--card-color:#287fce" data-category="lorcana disney" aria-label="Abrir catálogo de Lorcana">
+          <span class="category-symbol"><img src="lorcana.jpeg" alt="Ícone de Lorcana"></span>
+          <div><h3>Lorcana</h3><p>Histórias em cada carta</p></div>
+        </a>
+      </div>
+      <p class="empty-search" id="empty-search" role="status">Nenhuma categoria encontrada. Tente outro termo.</p>
+    </section>
+
+    <section class="section character-section" id="personagens">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Arte dos universos</span>
+            <h2>Personagens que inspiram coleções</h2>
+          </div>
+          <p>Uma seleção visual para dar mais personalidade à sua experiência na Elite das Cartas.</p>
+        </div>
+        <div class="character-grid">
+          <article class="character-card">
+            <img src="personagens%20marvel%20.jpeg" alt="Montagem com personagens do universo Marvel" loading="lazy">
+            <div class="character-copy">
+              <span>Universo Marvel</span>
+              <h3>Heróis em destaque</h3>
+              <p>Uma homenagem visual aos personagens que conquistaram gerações de fãs.</p>
+            </div>
+          </article>
+          <article class="character-card">
+            <img src="personagens%20one%20piece%20.jpeg" alt="Personagens da tripulação de One Piece reunidos" loading="lazy">
+            <div class="character-copy">
+              <span>Universo One Piece</span>
+              <h3>Aventura em cada coleção</h3>
+              <p>Relembre a tripulação e explore as cartas desse universo de aventuras.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section featured-section" id="cartas">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Seleção da comunidade</span>
+            <h2>Cartas em destaque</h2>
+          </div>
+          <p>Uma vitrine demonstrativa com espaço reservado para imagens, edições e preços.</p>
+        </div>
+        <div class="featured-grid">
+          <article class="featured-card">
+            <div class="featured-art" style="--card-color:#a45ee8" role="img" aria-label="Espaço reservado para imagem da carta Prisma Estelar">
+              <span class="featured-art-label">Imagem da carta</span>
+            </div>
+            <div class="featured-info">
+              <div class="featured-meta"><span class="featured-category">Pokémon</span><span>Demonstração</span></div>
+              <h3>Prisma Estelar</h3>
+              <p class="featured-edition">Edição: Aurora Lendária</p>
+              <div class="featured-price"><span>Preço de exemplo</span><strong>R$ 249,90</strong></div>
+            </div>
+          </article>
+          <article class="featured-card">
+            <div class="featured-art" style="--card-color:#12a9aa" role="img" aria-label="Espaço reservado para imagem da carta Guardião das Marés">
+              <span class="featured-art-label">Imagem da carta</span>
+            </div>
+            <div class="featured-info">
+              <div class="featured-meta"><span class="featured-category">Magic</span><span>Demonstração</span></div>
+              <h3>Guardião das Marés</h3>
+              <p class="featured-edition">Edição: Horizonte Profundo</p>
+              <div class="featured-price"><span>Preço de exemplo</span><strong>R$ 189,50</strong></div>
+            </div>
+          </article>
+          <article class="featured-card">
+            <div class="featured-art" style="--card-color:#ed4f9b" role="img" aria-label="Espaço reservado para imagem da carta Cometa Radiante">
+              <span class="featured-art-label">Imagem da carta</span>
+            </div>
+            <div class="featured-info">
+              <div class="featured-meta"><span class="featured-category">One Piece</span><span>Demonstração</span></div>
+              <h3>Cometa Radiante</h3>
+              <p class="featured-edition">Edição: Marés de Aventura</p>
+              <div class="featured-price"><span>Preço de exemplo</span><strong>R$ 325,00</strong></div>
+            </div>
+          </article>
+        </div>
+        <p class="market-disclaimer">Cartas e preços fictícios, apresentados somente como demonstração de layout.</p>
+      </div>
+    </section>
+
+    <section class="section market-section" id="mercado">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Radar do hobby · demonstração</span>
+            <h2>Movimentações do mercado</h2>
+          </div>
+          <span class="example-note">Dados fictícios · demonstração</span>
+        </div>
+        <div class="market-grid">
+          <article class="market-card" style="--card-color:#16804d">
+            <div class="market-top"><span>EM ALTA</span><span>Demonstração</span></div>
+            <h3>Cartas de coleção</h3>
+            <span class="market-detail">Interesse da comunidade</span>
+            <div class="market-value"><strong>+18,4%</strong><span class="change up">↗ tendência</span></div>
+            <div class="trend" aria-hidden="true"><span style="width:78%"></span></div>
+          </article>
+          <article class="market-card" style="--card-color:#a16d00">
+            <div class="market-top"><span>EM OBSERVAÇÃO</span><span>Demonstração</span></div>
+            <h3>Edições especiais</h3>
+            <span class="market-detail">Movimento de busca</span>
+            <div class="market-value"><strong>+6,2%</strong><span class="change up">↗ tendência</span></div>
+            <div class="trend" aria-hidden="true"><span style="width:56%"></span></div>
+          </article>
+          <article class="market-card" style="--card-color:#c34251">
+            <div class="market-top"><span>EM BAIXA</span><span>Demonstração</span></div>
+            <h3>Cards de temporadas passadas</h3>
+            <span class="market-detail">Interesse da comunidade</span>
+            <div class="market-value"><strong>-3,1%</strong><span class="change down">↘ tendência</span></div>
+            <div class="trend" aria-hidden="true"><span style="width:34%"></span></div>
+          </article>
+        </div>
+        <p class="market-disclaimer">Os indicadores e percentuais são fictícios e servem apenas como demonstração. Não representam preços reais nem recomendação financeira.</p>
+      </div>
+    </section>
+
+    <section class="section container" id="movimentacoes">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">O mercado se move</span>
+          <h2>O que influencia as movimentações?</h2>
+        </div>
+        <p>Vários fatores podem influenciar o interesse e o valor de uma carta ao longo do tempo.</p>
+      </div>
+      <div class="movement-grid">
+        <article class="movement-card">
+          <span class="movement-icon" aria-hidden="true">↗</span>
+          <h3>O que pode valorizar</h3>
+          <p>Disponibilidade limitada, procura entre colecionadores, condição de conservação e momentos importantes do jogo podem aumentar o interesse por certos cards.</p>
+        </article>
+        <article class="movement-card">
+          <span class="movement-icon" aria-hidden="true">↘</span>
+          <h3>O que pode desvalorizar</h3>
+          <p>Novas reimpressões, mudanças no metajogo, maior oferta ou variações na procura podem reduzir o interesse e os preços de referência.</p>
+        </article>
+      </div>
+      <p class="market-disclaimer">Valores e tendências podem variar. Pesquise fontes atualizadas antes de comprar ou vender.</p>
+    </section>
+
+    <section class="section container" id="colecao">
+      <div class="collection-panel">
+        <div>
+          <span class="eyebrow">Em breve</span>
+          <h2>Sua coleção, do seu jeito.</h2>
+          <p>Estamos preparando um espaço para você organizar seus cards favoritos e acompanhar sua coleção. A área “Minha coleção” estará disponível em uma próxima etapa.</p>
+        </div>
+        <span class="coming-soon">MINHA COLEÇÃO · EM BREVE</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 Elite das Cartas</span>
+      <span>Feito para quem coleciona boas histórias.</span>
+    </div>
+  </footer>
+
+  <style>
+    .visually-hidden {
+      width: 1px;
+      height: 1px;
+      position: absolute;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+  </style>
+  <script>
+    const searchForm = document.querySelector("#category-search");
+    const searchInput = document.querySelector("#search-input");
+    const categoryCards = [...document.querySelectorAll(".category-card")];
+    const emptySearch = document.querySelector("#empty-search");
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const query = searchInput.value.trim().toLocaleLowerCase("pt-BR");
+      let visibleCount = 0;
+
+      categoryCards.forEach((card) => {
+        const matches = card.dataset.category.includes(query);
+        card.hidden = !matches;
+        if (matches) visibleCount += 1;
+      });
+
+      emptySearch.classList.toggle("visible", visibleCount === 0);
+    });
+
+    searchInput.addEventListener("input", () => {
+      if (searchInput.value.trim() === "") {
+        categoryCards.forEach((card) => { card.hidden = false; });
+        emptySearch.classList.remove("visible");
+      }
+    });
+  </script>
+</body>
+</html>
