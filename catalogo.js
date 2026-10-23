@@ -106,6 +106,7 @@
   };
 
   const providers = window.ELITE_CATALOG_PROVIDERS || {};
+  const staticDemo = window.location.hostname.endsWith(".github.io");
   const characterArtwork = {
     marvel: { src: "personagens%20marvel%20.jpeg", alt: "Montagem com personagens do universo Marvel" },
     "one-piece": { src: "personagens%20one%20piece%20.jpeg", alt: "Personagens da tripulação de One Piece reunidos" }
@@ -631,7 +632,7 @@
     return;
   }
 
-  if (gameId && params.get("demo") !== "1") {
+  if (gameId && params.get("demo") !== "1" && !staticDemo) {
     let provider = providers[gameId];
     if (provider) {
       document.querySelector(".demo-note").hidden = true;

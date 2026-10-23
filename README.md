@@ -1,10 +1,23 @@
 # Elite das Cartas
 
-Site sem framework, servido pelo servidor padrão do Python. O SQLite guarda
-cache de respostas e snapshots de preços observados; não contém dados de cartas
-inventados nem é preenchido automaticamente com todo o catálogo.
+Site sem framework. A versão gratuita publicada no GitHub Pages é uma
+demonstração estática e funciona sem servidor ou configuração adicional.
 
-## Iniciar
+## Publicar gratuitamente no GitHub Pages
+
+O workflow em `.github/workflows/pages.yml` publica automaticamente o site
+quando há atualizações na branch `main`. Na primeira publicação, abra
+**Settings > Pages** no repositório e selecione **GitHub Actions** como origem
+em **Build and deployment**. Depois que a ação terminar, o endereço será
+`https://soavprofissional.github.io/elite-das-cartas/`.
+
+Na hospedagem GitHub Pages, o catálogo apresenta dados e preços claramente
+identificados como fictícios, para demonstração das páginas e dos filtros.
+Histórico de preços, Scrydex e outros recursos que exigem o servidor não estão
+disponíveis nessa versão. Não configure credenciais em páginas ou arquivos
+públicos.
+
+## Iniciar o servidor completo localmente
 
 1. Instale Python 3.10 ou superior.
 2. Copie `.env.example` para `.env` e configure as variáveis no ambiente do
