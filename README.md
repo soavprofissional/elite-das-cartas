@@ -26,6 +26,22 @@ públicos.
 3. Inicie o servidor com `python3 server.py`.
 4. Abra `http://127.0.0.1:8000`.
 
+## Hospedar gratuitamente para testes no Render
+
+O arquivo `render.yaml` configura um serviço web Python no plano gratuito.
+No Render, crie um **New > Blueprint**, conecte o GitHub e selecione este
+repositório. Depois da implantação, configure `SCRYDEX_API_KEY` e
+`SCRYDEX_TEAM_ID` em **Environment** se tiver credenciais Scrydex; nunca as
+adicione ao repositório. O app também funciona sem elas usando as fontes
+complementares disponíveis.
+
+Serviços gratuitos do Render entram em suspensão após 15 minutos sem tráfego e
+podem levar cerca de um minuto para acordar na próxima visita. O sistema de
+arquivos é temporário: o SQLite e o histórico podem ser apagados quando o
+serviço reiniciar, dormir ou for implantado novamente. Esse plano serve para
+apresentações e testes, não para preservar dados ou uso de produção. Consulte
+os [limites atuais do plano gratuito do Render](https://render.com/docs/free).
+
 As moedas USD, EUR e JPY são convertidas para reais usando a taxa de referência
 mais recente do BCE, com a data e a moeda original exibidas. O catálogo tenta
 consultar a rota local e usa o BCE diretamente como alternativa, inclusive ao

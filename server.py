@@ -21,8 +21,11 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("ELITE_CATALOG_DB", ROOT / "data" / "catalog.sqlite3"))
-HOST = os.environ.get("ELITE_CATALOG_HOST", "127.0.0.1")
-PORT = int(os.environ.get("ELITE_CATALOG_PORT", "8000"))
+HOST = os.environ.get(
+    "ELITE_CATALOG_HOST",
+    "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1",
+)
+PORT = int(os.environ.get("PORT", os.environ.get("ELITE_CATALOG_PORT", "8000")))
 CACHE_TTL_SECONDS = 24 * 60 * 60
 SCRYDEX_BASE = "https://api.scrydex.com"
 GAMES = {

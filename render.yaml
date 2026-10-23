@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: elite-das-cartas
+    runtime: python
+    plan: free
+    buildCommand: echo "No external dependencies to install"
+    startCommand: python3 server.py
+    envVars:
+      - key: SCRYDEX_API_KEY
+        sync: false
+      - key: SCRYDEX_TEAM_ID
+        sync: false
+      - key: ELITE_CATALOG_DB
+        value: /tmp/elite-das-cartas.sqlite3
