@@ -51,6 +51,7 @@
   });
 
   const normalizeCardNumber = (value) => String(value || "").trim().toLocaleLowerCase("pt-BR").replace(/^0+(?=\d)/, "");
+  const normalizePrintedCardNumber = (value) => normalizeCardNumber(String(value || "").split("/")[0]);
   const normalizePokemonSetId = (value) => String(value).toLowerCase().replace(/^([a-z]+)0+(\d)/, "$1$2");
   const pokemonTcgDexSetAliases = new Map([["me55c", "30th-c"]]);
   const pokemonSetNameSimilarity = (first, second) => {
@@ -67,15 +68,45 @@
     return shared / new Set([...firstTokens, ...secondTokens]).size;
   };
 
-  const market = (source, currency, value) => {
+  const market = (source, currency, value, region = null, scope = "printing") => {
     const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? { source, currency, value: parsed } : null;
+    return Number.isFinite(parsed) && parsed > 0 ? { source, currency, value: parsed, region, scope } : null;
   };
   const imageUrl = (value) => {
     if (typeof value !== "string") return null;
     if (/^https:\/\//i.test(value)) return value;
     return value.match(/^\[[^\]]+\]\((https:\/\/[^)]+)\)$/i)?.[1] || null;
   };
+  const firstImageUrl = (...values) => values.map(imageUrl).find(Boolean) || null;
+  const scrydexImageUrl = (images) => {
+    const candidates = Array.isArray(images)
+      ? images
+      : images && typeof images === "object"
+        ? [images.front, images.primary, images]
+        : images ? [images] : [];
+    const ordered = [
+      ...candidates.filter((image) => ["front", "primary"].includes(String(image?.type || "").toLowerCase())),
+      ...candidates.filter((image) => !["front", "primary"].includes(String(image?.type || "").toLowerCase()))
+    ];
+    for (const image of ordered) {
+      const url = firstImageUrl(
+        typeof image === "string" ? image : null,
+        image?.large,
+        image?.medium,
+        image?.normal,
+        image?.small,
+        image?.url,
+        image?.image_url
+      );
+      if (url) return url;
+    }
+    return null;
+  };
+  const scrydexCardImageUrl = (card) => firstImageUrl(
+    card.image_url,
+    card.image?.url,
+    card.image
+  ) || scrydexImageUrl(card.image) || scrydexImageUrl(card.images);
   const ecbRate = async (currency) => {
     const fetchLatest = async (code) => {
       const url = `https://data-api.ecb.europa.eu/service/data/EXR/D.${encodeURIComponent(code)}.EUR.SP00.A?lastNObservations=1&format=csvdata`;
@@ -111,7 +142,7 @@
     localizationUrl: "https://tcgdex.dev/",
     policy: "Os preços disponíveis são referências internacionais em USD/EUR e não são separados por condição.",
     async sets() {
-      return cached("pokemon:sets:pt:v7", async () => {
+      return cached("pokemon:sets:pt:v8", async () => {
         const [pokemonResult, tcgdexResult, tcgdexEnglishResult] = await Promise.allSettled([
           requestJson("https://api.pokemontcg.io/v2/sets?pageSize=250&orderBy=-releaseDate"),
           cached("pokemon:pt:sets:v2", async () => {
@@ -151,7 +182,8 @@
             const id = officialIdByTcgDexId.get(normalizePokemonSetId(set.id)) || set.id;
             return {
               ...formatSet(id, set.name, null, set.cardsCount),
-              localizationSetId: set.id
+              localizationSetId: set.id,
+              localizationSetExact: true
             };
           });
         }
@@ -166,16 +198,22 @@
             const similarEnglishMatch = exactEnglishMatch ? null : englishSets
               .map((candidate) => ({ candidate, score: pokemonSetNameSimilarity(set.name, candidate.name) }))
               .sort((first, second) => second.score - first.score)[0];
+            const exactLocalizedSet = localizedById.get(normalizedId);
+            const aliasedSetId = aliasedId && normalizePokemonSetId(aliasedId);
+            const exactAliasedSet = aliasedSetId
+              ? localizedById.get(aliasedSetId) || englishById.get(aliasedSetId)
+              : null;
             const matchedEnglishSet = (aliasedId && englishById.get(normalizePokemonSetId(aliasedId))) ||
               exactEnglishMatch ||
               (similarEnglishMatch?.score >= 0.72 ? similarEnglishMatch.candidate : null);
-            const localized = localizedById.get(normalizedId) ||
+            const localized = exactLocalizedSet ||
               (aliasedId && localizedById.get(normalizePokemonSetId(aliasedId))) ||
               (matchedEnglishSet && localizedById.get(normalizePokemonSetId(matchedEnglishSet.id)));
             return {
               ...formatSet(set.id, localized?.name || set.name, set.releaseDate, set.total),
               originalName: localized && localized.name !== set.name ? set.name : null,
-              localizationSetId: localized?.id || matchedEnglishSet?.id || null
+              localizationSetId: localized?.id || matchedEnglishSet?.id || null,
+              localizationSetExact: Boolean(exactLocalizedSet || exactEnglishMatch || exactAliasedSet)
             };
           });
       });
@@ -183,7 +221,7 @@
     async cards(set, cursor) {
       const page = cursor || 1;
       const tcgdexSetId = set.localizationSetId || pokemonTcgDexSetAliases.get(set.id.toLowerCase()) || set.id;
-      const cacheKey = `pokemon:cards:pt:v8:${set.id}:${page}`;
+      const cacheKey = `pokemon:cards:pt:v10:${set.id}:${page}`;
       return cached(cacheKey, async () => {
         const query = new URLSearchParams({
           q: `set.id:${set.id}`,
@@ -216,7 +254,7 @@
           }
         }
 
-        if ((!officialResponse?.data?.length) && tcgdexSet?.cards?.length) {
+        if (!officialResponse?.data?.length && set.localizationSetExact && tcgdexSet?.cards?.length) {
           const tcgdexCards = [...tcgdexSet.cards].sort((first, second) =>
             String(first.localId).localeCompare(String(second.localId), "en", { numeric: true })
           );
@@ -247,28 +285,42 @@
           throw new Error(`Pokémon TCG API: ${officialError} TCGdex: ${tcgdexMessage}`);
         }
 
-        const localizedCards = tcgdexSet?.cards || [];
-        const localizedByNumber = new Map(localizedCards.map((card) => [normalizeCardNumber(card.localId), card.name]));
+        const localizedCards = set.localizationSetExact ? tcgdexSet?.cards || [] : [];
+        const localizedByNumber = new Map();
+        for (const card of localizedCards) {
+          const number = normalizePrintedCardNumber(card.localId);
+          if (!number) continue;
+          if (localizedByNumber.has(number)) {
+            localizedByNumber.set(number, null);
+          } else {
+            localizedByNumber.set(number, card);
+          }
+        }
         const hasMore = officialResponse.page * officialResponse.pageSize < officialResponse.totalCount;
         return {
           cards: officialResponse.data.map((card) => {
             const prices = [];
             for (const [variant, value] of Object.entries(card.tcgplayer?.prices || {})) {
-              const item = market(`TCGplayer · ${variant}`, "USD", value.market);
+              const item = market(`TCGplayer · ${variant}`, "USD", value.market, "us");
               if (item) prices.push(item);
             }
             for (const [variant, value] of Object.entries(card.cardmarket?.prices || {})) {
-              const item = market(`Cardmarket · ${variant}`, "EUR", value.trendPrice);
+              const item = market(`Cardmarket · ${variant}`, "EUR", value.trendPrice, "eu");
               if (item) prices.push(item);
             }
-            const localizedName = localizedByNumber.get(normalizeCardNumber(card.number));
+            const normalizedNumber = normalizePrintedCardNumber(card.number);
+            const localizedCard = normalizedNumber ? localizedByNumber.get(normalizedNumber) : null;
+            const localizedName = localizedCard?.name;
+            const localizedImage = typeof localizedCard?.image === "string"
+              ? imageUrl(`${localizedCard.image.replace(/\/+$/, "")}/high.webp`)
+              : null;
             return {
               name: localizedName || card.name,
               originalName: localizedName && localizedName !== card.name ? card.name : null,
               number: card.number,
               rarity: card.rarity || "Não informada",
-              language: "en",
-              imageUrl: card.images?.large || card.images?.small || null,
+              language: localizedImage ? (tcgdexLanguage === "pt" ? "pt" : "en") : "en",
+              imageUrl: localizedImage || card.images?.large || card.images?.small || null,
               variants: [],
               prices,
               sourceUrl: card.tcgplayer?.url || card.cardmarket?.url || null
@@ -301,7 +353,7 @@
     },
     async cards(set, cursor) {
       const url = cursor || `https://api.scryfall.com/cards/search?order=set&unique=prints&q=${encodeURIComponent(`set:${set.id}`)}`;
-      const cacheKey = `magic:cards:pt:v2:${set.id}:${cursor || "1"}`;
+      const cacheKey = `magic:cards:pt:v4:${set.id}:${cursor || "1"}`;
       return cached(cacheKey, async () => {
         await scryfallDelay();
         const response = await requestJson(url, {
@@ -311,25 +363,29 @@
         return {
           cards: response.data.map((card) => {
             const localizedName = card.lang === "pt" ? card.printed_name || null : null;
+            const imageUris = card.image_uris?.normal || card.image_uris?.large
+              ? card.image_uris
+              : card.card_faces?.map((face) => face.image_uris).find((images) => images?.normal || images?.large);
+            const cardImage = imageUris?.normal || imageUris?.large || null;
             return {
               name: localizedName || card.name,
               originalName: localizedName && localizedName !== card.name ? card.name : null,
               number: card.collector_number,
               rarity: card.rarity || "Não informada",
               language: card.lang || null,
-              imageUrl: card.image_uris?.normal || card.image_uris?.large || null,
+              imageUrl: cardImage,
               variants: (card.finishes || []).map((name) => ({
                 name,
-                imageUrl: card.image_uris?.normal || card.image_uris?.large || null,
+                imageUrl: cardImage,
                 prices: [
-                  market("Scryfall", "USD", name === "foil" ? card.prices?.usd_foil : card.prices?.usd),
-                  market("Scryfall", "EUR", card.prices?.eur)
+                  market("Scryfall", "USD", name === "foil" ? card.prices?.usd_foil : card.prices?.usd, "us"),
+                  market("Scryfall", "EUR", card.prices?.eur, "eu")
                 ].filter(Boolean)
               })),
               prices: [
-                market("Scryfall", "USD", card.prices?.usd),
-                market("Scryfall · foil", "USD", card.prices?.usd_foil),
-                market("Scryfall", "EUR", card.prices?.eur)
+                market("Scryfall", "USD", card.prices?.usd, "us"),
+                market("Scryfall · foil", "USD", card.prices?.usd_foil, "us"),
+                market("Scryfall", "EUR", card.prices?.eur, "eu")
               ].filter(Boolean),
               sourceUrl: card.scryfall_uri
             };
@@ -360,7 +416,7 @@
     },
     async cards(set, cursor) {
       const offset = Number(cursor || 0);
-      const cacheKey = `yugioh:cards:pt:v2:${set.id}:${offset}`;
+      const cacheKey = `yugioh:cards:pt:v4:${set.id}:${offset}`;
       return cached(cacheKey, async () => {
         const query = new URLSearchParams({ cardset: set.sourceSetName, num: "100", offset: String(offset) });
         const response = await requestJson(`https://db.ygoprodeck.com/api/v7/cardinfo.php?${query}`);
@@ -383,8 +439,8 @@
             const printing = printings[0];
             const prices = [];
             const priceData = card.card_prices?.[0] || {};
-            const tcgplayer = market("TCGplayer", "USD", priceData.tcgplayer_price);
-            const cardmarket = market("Cardmarket", "EUR", priceData.cardmarket_price);
+            const tcgplayer = market("TCGplayer", "USD", priceData.tcgplayer_price, "us", "card");
+            const cardmarket = market("Cardmarket", "EUR", priceData.cardmarket_price, "eu", "card");
             if (tcgplayer) prices.push(tcgplayer);
             if (cardmarket) prices.push(cardmarket);
             const localizedName = localizedById.get(card.id);
@@ -394,7 +450,7 @@
               number: printing?.set_code || String(card.id),
               rarity: printing?.set_rarity || card.type || "Não informada",
               language: null,
-              imageUrl: localizedName ? null : card.card_images?.[0]?.image_url || null,
+              imageUrl: card.card_images?.[0]?.image_url || null,
               variants: [],
               prices,
               sourceUrl: null
@@ -456,7 +512,7 @@
     },
     async cards(set, cursor) {
       const url = cursor || `https://api.lorcast.com/v0/cards/search?q=${encodeURIComponent(`set:${set.id}`)}`;
-      const cacheKey = `lorcana:cards:v2:${set.id}:${cursor || "1"}`;
+      const cacheKey = `lorcana:cards:v3:${set.id}:${cursor || "1"}`;
       return cached(cacheKey, async () => {
         await new Promise((resolve) => setTimeout(resolve, 110));
         const response = await requestJson(url);
@@ -469,16 +525,16 @@
             language: card.lang || card.language || null,
             imageUrl: imageUrl(card.image_uris?.digital?.normal || card.image_uris?.normal || card.image_uris?.large),
             variants: [
-              market("Lorcast / TCGplayer", "USD", card.prices?.usd)
-                ? { name: "Normal", imageUrl: imageUrl(card.image_uris?.digital?.normal || card.image_uris?.normal || card.image_uris?.large), prices: [market("Lorcast / TCGplayer", "USD", card.prices.usd)] }
+              market("Lorcast / TCGplayer", "USD", card.prices?.usd, "us")
+                ? { name: "Normal", imageUrl: imageUrl(card.image_uris?.digital?.normal || card.image_uris?.normal || card.image_uris?.large), prices: [market("Lorcast / TCGplayer", "USD", card.prices.usd, "us")] }
                 : null,
-              market("Lorcast / TCGplayer · foil", "USD", card.prices?.usd_foil)
-                ? { name: "Foil", imageUrl: imageUrl(card.image_uris?.digital?.normal || card.image_uris?.normal || card.image_uris?.large), prices: [market("Lorcast / TCGplayer · foil", "USD", card.prices.usd_foil)] }
+              market("Lorcast / TCGplayer · foil", "USD", card.prices?.usd_foil, "us")
+                ? { name: "Foil", imageUrl: imageUrl(card.image_uris?.digital?.normal || card.image_uris?.normal || card.image_uris?.large), prices: [market("Lorcast / TCGplayer · foil", "USD", card.prices.usd_foil, "us")] }
                 : null
             ].filter(Boolean),
             prices: [
-              market("Lorcast / TCGplayer", "USD", card.prices?.usd),
-              market("Lorcast / TCGplayer · foil", "USD", card.prices?.usd_foil)
+              market("Lorcast / TCGplayer", "USD", card.prices?.usd, "us"),
+              market("Lorcast / TCGplayer · foil", "USD", card.prices?.usd_foil, "us")
             ].filter(Boolean),
             sourceUrl: card.purchase_uris?.tcgplayer || null
           })),
@@ -527,7 +583,8 @@
       const cards = results.map((card) => {
         const variants = (Array.isArray(card.variants) ? card.variants : []).map((variant) => ({
           name: String(variant.name || variant.variant || "Não informada"),
-          imageUrl: variant.image_url || variant.image?.url || null,
+          imageUrl: firstImageUrl(variant.image_url, variant.image?.url, variant.image) ||
+            scrydexImageUrl(variant.image) || scrydexImageUrl(variant.images),
           prices: (Array.isArray(variant.prices) ? variant.prices : []).filter((price) => price && price.currency).map((price) => ({
             source: `${price.company || "Scrydex"}${price.type === "graded" && price.grade ? ` · ${price.company || "graded"} ${price.grade}` : ""}`,
             currency: String(price.currency).toUpperCase(),
@@ -539,10 +596,13 @@
             condition: price.condition || null,
             grade: price.grade || null,
             company: price.company || null,
-            updatedAt: price.updated_at || price.updatedAt || null
+            updatedAt: price.updated_at || price.updatedAt || null,
+            region: /tcgplayer/i.test(String(price.company || "")) ? "us" :
+              /cardmarket/i.test(String(price.company || "")) ? "eu" : null,
+            scope: "printing"
           }))
         }));
-        const cardImage = card.image_url || card.image?.url || card.images?.large || card.images?.normal || card.images?.small || null;
+        const cardImage = scrydexCardImageUrl(card);
         const languageCode = card.language || card.lang || language || null;
         const population = Array.isArray(card.pop_reports) ? card.pop_reports : card.pop_reports ? [card.pop_reports] : [];
         return {
